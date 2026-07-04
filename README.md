@@ -1,146 +1,61 @@
-# Skyvora
+# SkyVora
 
-### Smart Weather Forecasting Web Application
-
-Skyvora is a modern weather forecasting web application that provides accurate real-time weather information, hourly and weekly forecasts, air quality monitoring, favorite locations and an intelligent weather assistant to help users make better daily decisions.
-
-Designed with a clean, responsive interface, Skyvora delivers weather information in an intuitive and user-friendly experience across desktop and mobile devices.
-
----
+An AI-powered weather forecasting web application built on **TanStack Start** (React 19 + Vite), **Lovable Cloud** (Postgres + Auth + Server Functions), and **Lovable AI Gateway** (Gemini).
 
 ## Features
 
-- 🌍 Search weather by city name
-- 📍 Detect current location automatically
-- 🌡️ Real-time weather conditions
-- ⏰ Hourly weather forecast
-- 📅 7-Day weather forecast
-- 🌅 Sunrise & Sunset timings
-- 💨 Air Quality Index (AQI)
-- 💧 Humidity, Wind Speed & Pressure
-- ❤️ Save Favorite Cities
-- 🤖 Intelligent Weather Assistant
-- 🌙 Dark & Light Theme
-- 👤 User Authentication
-- 📱 Fully Responsive Design
+### Weather
+- Search weather by city name (or auto-detect via geolocation)
+- Current conditions: temperature, feels-like, weather description
+- Hourly forecast (next 24h, 3h steps)
+- 7-day daily forecast
+- Air Quality Index (AQI)
+- Wind speed & direction, humidity, pressure, visibility
+- Sunrise & sunset times
+- Dynamic weather-aware backgrounds (clear, cloudy, rainy, stormy, day/night)
 
----
+### User
+- Email/password sign-up and sign-in (JWT via Lovable Cloud)
+- Save & remove favorite cities
+- Persisted chat history
+- Celsius / Fahrenheit toggle (persisted in `localStorage`)
+- Dark / Light theme toggle with smooth animation (persisted in `localStorage`)
 
-## Tech Stack
+### AI Assistant
+- Floating chatbot at the bottom-right of every page
+- Streams responses from Lovable AI Gateway (Gemini)
+- Real-time weather context passed with every question:
+  - "Should I carry an umbrella today?"
+  - "What should I wear?"
+  - "Is today safe for travel?"
+  - Storm / heatwave warnings, AQI explanations, hydration reminders
 
-### Frontend
-- React.js
-- TypeScript
-- Tailwind CSS
-- TanStack Router
-- React Query
-
-### Backend
-- Supabase
-
-### APIs
-- OpenWeather API
-- AI SDK
-
-### Authentication
-- Supabase Authentication
-
-### Deployment
-- Vercel 
-
----
-
-## 📂 Project Structure
+## Architecture
 
 ```
-src/
-│
-├── components/
-├── pages/
-├── hooks/
-├── services/
-├── lib/
-├── routes/
-├── styles/
-└── utils/
+Frontend (React + TanStack Start)
+  └── /api/chat  ─── Streaming AI (Lovable AI Gateway)
+  └── Server functions (createServerFn) ─── Lovable Cloud (Postgres, Auth)
+       └── OpenWeatherMap API (server-side fetch, keys never in browser)
 ```
 
----
+- **Database schema** (`profiles`, `favorite_cities`, `chat_messages`) with Row-Level Security scoped to `auth.uid()`.
+- **Auth**: JWT sessions managed by Lovable Cloud; bearer token auto-attached to server function calls.
+- **Weather API keys**: `OPENWEATHER_API_KEY` stored as a Lovable secret, read server-side only.
+- **AI key**: `LOVABLE_API_KEY` auto-provisioned by Lovable Cloud, server-side only.
+- **Fetch API** used throughout — no Axios.
 
-## ⚡ Installation
+## Local development
 
-Clone the repository
-
-```bash
-git clone https://github.com/mohsin03nehan/skyvora.git
+```
+bun install
+bun run dev
 ```
 
-Move into project folder
+## Environment variables
 
-```bash
-cd skyvora
-```
+Managed via Lovable Cloud secrets — no `.env` file needed. See `.env.example` for reference.
 
-Install dependencies
+## Deploy
 
-```bash
-npm install
-```
-
-Run development server
-
-```bash
-npm run dev
-```
-
----
-
-## 🔑 Environment Variables
-
-Create a `.env` file and configure the required environment variables.
-
-```env
-VITE_OPENWEATHER_API_KEY=your_api_key
-
-VITE_SUPABASE_URL=your_supabase_url
-
-VITE_SUPABASE_ANON_KEY=your_supabase_key
-```
-
----
-
-## 🎯 Future Improvements
-
-- Weather radar maps
-- Severe weather notifications
-- Voice-based weather assistant
-- Multi-language support
-- Weather history
-- Advanced analytics
-- Travel weather planner
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome.
-
-If you'd like to improve this project, feel free to fork the repository, create a new branch and submit a pull request.
-
----
-
-## 👨‍💻 Author
-
-**Muhammad Mohsin Nehan**
-
-GitHub:
-https://github.com/mohsin03nehan
-
-LinkedIn:
-https://www.linkedin.com/in/mohsin-nehan-abb435411/
-
----
-
-## ⭐ Support
-
-If you found this project helpful, consider giving it a ⭐ on GitHub.
+Publish directly from the Lovable editor (Publish button). Frontend and server functions deploy together to a Cloudflare Worker edge runtime.
